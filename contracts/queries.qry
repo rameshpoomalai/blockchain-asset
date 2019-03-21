@@ -53,11 +53,31 @@ query selectDocumentsApproved {
   			WHERE (docStatus == true )
 }
 
+query selectDocumentsAIApproved {
+  description: "Select all the AI approved documents"
+  statement:
+  		SELECT org.ibm.dms.Document
+  			WHERE (docAIApprovalStatus == 'approved' OR docAIApprovalStatus == 'declined')
+}
+
 query selectDocumentsApprovelPending {
   description: "Select all the approved documents"
   statement:
   		SELECT org.ibm.dms.Document
   			WHERE (docStatus == false )
+}
+
+query selectDocumentsAIApprovalPending {
+  description: "Select all the AI approval pending documents"
+  statement:
+  		SELECT org.ibm.dms.Document
+  			WHERE (docAIApprovalStatus == 'pending-approval')
+}
+
+query selectAllAIRegulators {
+  description: "select all registered AI Regulators"
+  statement:
+      SELECT org.ibm.dms.AIRegulator
 }
 
 query getDocument {
@@ -66,12 +86,14 @@ query getDocument {
   		SELECT org.ibm.dms.Document
   			WHERE (documentId == _$documentId )
 }
+
 query selectDocumentByMember {
   description: "Select all documents based on owner"
   statement:
       SELECT org.ibm.dms.Document
           WHERE (owner == _$owner)
 }
+
 query selectApprovedDocumentByMember {
   description: "Select all documents based on owner"
   statement:
@@ -85,12 +107,14 @@ query selectAllAuthorizeRequestByMember {
       SELECT org.ibm.dms.AuthorizeRequest
           WHERE (member == _$member)
 }
+
 query selectAllAuthorizeRequestByPartner {
   description: "Select all based on owner"
   statement:
       SELECT org.ibm.dms.AuthorizeRequest
           WHERE (partner == _$partner)
 }
+
 query selectAuthorizeRequest {
   description: "Select all members"
   statement:

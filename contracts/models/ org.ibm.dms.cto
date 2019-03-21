@@ -35,11 +35,21 @@ participant Regulator identified by id {
   o String name
 }
 
+participant AIRegulator identified by id {
+  o String id
+  o String name
+  o String urlhost
+  o String urlpath
+  o String port
+  o String method
+}
+
 asset Document identified by documentId {
   o String documentId
   o String docName
   o String documentDescription
   o Boolean docStatus
+  o String docAIApprovalStatus
   o String docPath
   o String originalname
   o String mimetype

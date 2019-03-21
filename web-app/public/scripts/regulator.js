@@ -44,13 +44,13 @@ $('.sign-in-regulator').click(function() {
         //update dashboard
         $('.dashboards').html(function() {
 
-            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="4"><tr><th>Member</th><th width="50%">Document Name </th><th width="50%">Document Status </th></tr>';
+            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="4"><tr><th>Member</th><th width="50%">Document Name </th><th width="50%">Document Status</th><th>AI-Approval</th></tr>';
             var documentsData = data.approvedDocs;
             if(documentsData)
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                str = str + '<tr><td width="50%">' + documentsData[i].owner + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].docStatus + '</td></tr>';
+                str = str + '<tr><td width="50%">' + documentsData[i].owner + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].docStatus + '</td><td width="50%"> ' + documentsData[i].docAIApprovalStatus + '</td></tr>';
               }
             }
 
@@ -60,13 +60,13 @@ $('.sign-in-regulator').click(function() {
 
         //update dashboard
         $('.reviewandapprove').html(function() {
-            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="4"><tr><th>Member</th> <th>Document Name </th> <th>Approve </th></tr>';
+            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="4"><tr><th>Member</th> <th>Document Name </th> <th>Action</th><th>AI-Approval</th></tr>';
             var documentsData = data.approvalPendingList;
             if(documentsData)
             {
               for (var i = 0; i < documentsData.length; i++) {
-
-                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveDocument(\''+documentsData[i].documentId+'\');">Click to approve</img>  </td></tr>';
+                var doc_id=documentsData[i].documentId;
+                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveDocument(\''+documentsData[i].documentId+'\');"></img></td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
               }
             }
 
@@ -106,6 +106,8 @@ function approveDocument(documentId) {
   var inputData = '{' + '"regulatorid" : "' + formregulatorId + '", ' + '"cardid" : "' + formCardId + '", "documentId" :"'+documentId+'"}';
   console.log(inputData);
 
+
+
   //make ajax call
   $.ajax({
     type: 'POST',
@@ -132,13 +134,13 @@ function approveDocument(documentId) {
 
         $('.dashboards').html(function() {
 
-            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="1"><tr><th>Member</th><th width="50%">Document Name </th><th width="50%">Document Status </th></tr>';
+            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="1"><tr><th>Member</th><th width="50%">Document Name </th><th width="50%">Document Status </th><th>AI-approval</tr>';
             var documentsData = data.approvedDocs;
             if(documentsData)
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                str = str + '<tr><td width="50%">' + documentsData[i].owner + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].docStatus + '</td></tr>';
+                str = str + '<tr><td width="50%">' + documentsData[i].owner + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].docStatus + '</td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
               }
             }
 
@@ -148,13 +150,13 @@ function approveDocument(documentId) {
 
         //update dashboard
         $('.reviewandapprove').html(function() {
-            var str = '<table width="100%"  class="blueTable documentList" border="1" cellspacing="1" cellpadding="1"><tr><th>Member</th> <th>Document Name </th> <th>Approve </th></tr>';
+            var str = '<table width="100%"  class="blueTable documentList" border="1" cellspacing="1" cellpadding="1"><tr><th>Member</th> <th>Document Name </th> <th>Approve </th><th>AI-Approval</th></tr>';
             var documentsData = data.approvalPendingList;
             if(documentsData)
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href="/api/viewDocument?path='+documentsData[i].docPath+'">' + documentsData[i].docName +'</a></td><td> <a href="/api/approveDocument?id='+documentsData[i].documentId+'">'+documentsData[i].documentId+'</a>  </td></tr>';
+                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href="/api/viewDocument?path='+documentsData[i].docPath+'">' + documentsData[i].docName +'</a></td><td> <a href="/api/approveDocument?id='+documentsData[i].documentId+'">'+documentsData[i].documentId+'</a>  </td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
               }
             }
 

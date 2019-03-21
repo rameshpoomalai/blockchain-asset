@@ -110,6 +110,58 @@ $('.register-partner').click(function() {
 
 });
 
+$('.register-mlregulator').click(function() {
+  var cardID = $('.ai-card-id input').val();
+  var regulatorID = $('.ai-regulator-id input').val();
+  var urlhost = $('.urlhost input').val();
+  var urlpath = $('.urlpath input').val();
+  var port = $('.port input').val();
+  var method = $('.method input').val();
+  var ainame = $('.ainame input').val();
+
+  var inputData='{"regulatorid":"'+regulatorID+'","cardid":"'+cardID+'","urlhost":"'+urlhost+'","urlpath":"'+urlpath+'","port":"'+port+'","method":"'+method+'","name":"'+ainame+'"}';
+
+  console.log(inputData);
+
+  $.ajax({
+    type: 'POST',
+    url: apiUrl + 'registerAIRegulator',
+    data: inputData,
+    dataType: 'json',
+    contentType: 'application/json',
+    beforeSend: function() {
+      //display loading
+      document.getElementById('registration').style.display = "none";
+      document.getElementById('loader').style.display = "block";
+    },
+    success: function(data) {
+
+      //remove loader
+      document.getElementById('loader').style.display = "none";
+
+      //check data for error
+      if (data.error) {
+        document.getElementById('registration').style.display = "block";
+        alert(data.error);
+        return;
+      } else {
+        //notify successful registration
+        document.getElementById('successful-registration').style.display = "block";
+        document.getElementById('registration-info').style.display = "none";
+      }
+
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      //reload on error
+      alert("Error: Try again")
+      console.log(errorThrown);
+      console.log(textStatus);
+      console.log(jqXHR);
+    }
+  });
+
+});
+
 //check user input and call server to create dataset
 $('.register-regulator').click(function() {
 

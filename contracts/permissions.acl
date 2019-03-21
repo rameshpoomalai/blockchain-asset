@@ -118,6 +118,23 @@ rule RegulatorAccessDocument {
     resource: "org.ibm.dms.Document"
     action: ALLOW
 }
+
+rule AIRegulatorAccessDocument {
+    description: "allow AIRegulator to access documents"
+    participant: "org.ibm.dms.AIRegulator"
+    operation: ALL
+    resource: "org.ibm.dms.Document"
+    action: ALLOW
+}
+
+rule AIRegulatorAccessAIRegulator {
+    description: "allow AIRegulator to access other AIRegulators"
+    participant: "org.ibm.dms.AIRegulator"
+    operation: ALL
+    resource: "org.ibm.dms.AIRegulator"
+    action: ALLOW
+}
+
 rule RegulatorAccessMember {
     description: "Deny Partner access to Members on the network"
     participant: "org.ibm.dms.Regulator"
