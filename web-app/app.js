@@ -48,6 +48,8 @@ apiRouter.use(helmet.hidePoweredBy({
 
 var upload = multer({ dest: 'uploads/' })
 
+var airegid='273645';
+var aicardid='27364';
 
 
 uploadRouter.post('/upload',upload.single('avatar'),   function(req, res) {
@@ -194,41 +196,90 @@ function addDocument(req, res)
         });
         return;
       } else {
+        var docId=uuidv1();
 
-        //else register member on the network
-        network.addDocument(cardId, accountNumber, docName, docDesc, uuidv1(), path, originalname, mimetype, size)
-          .then((response) => {
-            //return error if error in response
-            if (response.error != null) {
-              res.json({
-                error: response.error
+        network.getAIRegulatorById(aicardid,airegid)
+        .then((response)=>{
+          if (response.error != null) {
+            returnData.error=response.error;
+            return response.error;
+          } else {
+                var options = {
+                  host: response.urlhost,
+                  port: response.port,
+                  path: response.urlpath+'?transID='+docId,
+                  method: response.method
+                };
+      
+                let promise = new Promise(function(resolve, reject) {
+                  http.request(options, function(resp) {
+                    //console.log('STATUS: ' + res.statusCode);
+                    //console.log('HEADERS: ' + JSON.stringify(res.headers));
+                    resp.setEncoding('utf8');
+                    resp.on('data', function (chunk) {
+                      //console.log('BODY: ' + chunk);
+                      resolve(chunk);
+                    });
+                    resp.on('error', function(chunk){
+                      //console.log('BODY: ' + chunk);
+                      reject(chunk);
+                    });
+                  }).end();
               });
-            } else {
-
-                //get UsePoints transactions from the network
-                console.log('documentList using param - ' + ' accountNumber: ' + accountNumber + ' cardId: ' + cardId);
-                //network.documentList(cardId, accountNumber )
-
-                network.selectDocumentByMember(cardId,accountNumber)
-                  .then((documentsData) => {
-                    //return error if error in response
-                    console.log("documentsData:"+documentsData);
-                    if (documentsData.error != null) {
-                      res.json({
-                        error: documentsData.error
-                      });
-                      return;
-                    } else {
-                      //else add transaction data to return object
-                      returnData.documentsData = documentsData;
-                      res.json(returnData);
+            
+              promise.then(
+                result => { 
+                  console.log("****************"+result);
+                  var docAIApprovalStatus = "";
+                  if(result.toLowerCase().includes('success'))
+                    {
+                      docAIApprovalStatus='approved';
                     }
-
-
-                  })
-
-            }
-          });
+                  else
+                    {
+                      docAIApprovalStatus='declined';
+                    }
+                  network.addDocument(cardId, accountNumber, docName, docDesc, docId, path, originalname, mimetype, size,docAIApprovalStatus)
+                  .then((response) => {
+                    //return error if error in response
+                    if (response.error != null) {
+                      res.json({
+                        error: response.error
+                      });
+                    } else {
+        
+                        //get UsePoints transactions from the network
+                        console.log('documentList using param - ' + ' accountNumber: ' + accountNumber + ' cardId: ' + cardId);
+                        //network.documentList(cardId, accountNumber )
+        
+                        network.selectDocumentByMember(cardId,accountNumber)
+                          .then((documentsData) => {
+                            //return error if error in response
+                            console.log("documentsData:"+documentsData);
+                            if (documentsData.error != null) {
+                              res.json({
+                                error: documentsData.error
+                              });
+                              return;
+                            } else {
+                              //else add transaction data to return object
+                              returnData.documentsData = documentsData;
+                              res.json(returnData);
+                            }
+                          })
+                    }
+                  });
+                },
+                error => { 
+                  console.log("****************"+error);
+                  res.json({
+                    error: error
+                  });
+                  return;
+                }
+              );
+          }
+        });
       }
     });
 }
@@ -239,18 +290,16 @@ apiRouter.post('/api/addDocument', function(req, res) {
 });
 
 apiRouter.post('/api/registerAIRegulator', function(req, res) {
-  var cardid=req.body.cardid;
-  var regulatorid=req.body.regulatorid;
   var urlhost=req.body.urlhost;
   var urlpath=req.body.urlpath;
   var port=req.body.port;
   var method=req.body.method;
-  var name=req.body.name;
+  var name="sample1";
   
-  console.log('Using param - urlhost: ' + urlhost + ' urlpath: ' + urlpath + ' port: ' + port+' method:'+method+' name:'+name+' cardid:'+cardid+' regulatorid:'+regulatorid);
+  console.log('Using param - urlhost: ' + urlhost + ' urlpath: ' + urlpath + ' port: ' + port+' method:'+method+' name:'+name+' cardid:'+aicardid+' regulatorid:'+airegid);
 
   //validate partner registration fields
-  validate.validateAIRegulatorRegistration(cardid, urlhost, urlpath,port,method,name,regulatorid)
+  validate.validateAIRegulatorRegistration(urlhost, urlpath,port,method)
     .then((response) => {
       //return error if error in response
       if (response.error != null) {
@@ -259,15 +308,25 @@ apiRouter.post('/api/registerAIRegulator', function(req, res) {
         });
         return;
       } else {
-        //else register partner on the network
-        network.registerAIRegulator(cardid, urlhost, urlpath, port, method,name, regulatorid)
+        
+        network.registerAIRegulator(aicardid, urlhost, urlpath, port, method,name, airegid)
           .then((response) => {
             //return error if error in response
             if (response.error != null) {
-              res.json({
-                error: response.error
+              network.getAIRegulatorById(aicardid,airegid).then((response) => {
+                if (response.error != null) {
+                  res.json({
+                    error: response.error
+                  });
+                }
+                else{
+                  console.log('update implementation pending');
+                  res.json({
+                    error: 'update implementation of AIValidator is pending'
+                  });
+                }
               });
-            } else {
+                  } else {
               //else return success
               console.log('//////////////////'+JSON.stringify(response));
               res.json({
@@ -278,96 +337,6 @@ apiRouter.post('/api/registerAIRegulator', function(req, res) {
       }
     });
 });
-
-apiRouter.post('/api/callMLModel', function(req, res) {
-  var returnData={};
-  var docId=req.body.documentId;
-  var airegid=req.body.selectedaivalidatorid;
-  var cardid=req.body.cardid;
-
-  network.getAIRegulatorById(cardid,airegid)
-  .then((response)=>{
-    if (response.error != null) {
-      res.json({
-        error: response.error
-      });
-      return;
-    } else {
-          var options = {
-            host: response.urlhost,
-            port: response.port,
-            path: response.urlpath+'?transID='+docId,
-            method: response.method
-          };
-
-          let promise = new Promise(function(resolve, reject) {
-            http.request(options, function(res) {
-              //console.log('STATUS: ' + res.statusCode);
-              //console.log('HEADERS: ' + JSON.stringify(res.headers));
-              res.setEncoding('utf8');
-              res.on('data', function (chunk) {
-                //console.log('BODY: ' + chunk);
-                resolve(chunk);
-              });
-              res.on('error', function(chunk){
-                //console.log('BODY: ' + chunk);
-                reject(chunk);
-              });
-            }).end();
-        });
-      
-        promise.then(
-          result => { 
-            console.log("****************"+result);
-            returnData.mlResult=result;
-            res.json(returnData);
-          },
-          error => { 
-            console.log("****************"+error);
-            returnData.mlResult=error;
-            res.json(returnData);
-          }
-        );
-    }
-  });
-
-  /*var options = {
-    host: 'retailai.mybluemix.net',
-    port: 80,
-    path: '/api/score?transID='+docId,
-    method: 'GET'
-  };
-
-  let promise = new Promise(function(resolve, reject) {
-      http.request(options, function(res) {
-        //console.log('STATUS: ' + res.statusCode);
-        //console.log('HEADERS: ' + JSON.stringify(res.headers));
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-          //console.log('BODY: ' + chunk);
-          resolve(chunk);
-        });
-        res.on('error', function(chunk){
-          //console.log('BODY: ' + chunk);
-          reject(chunk);
-        });
-      }).end();
-  });
-
-  promise.then(
-    result => { 
-      console.log("****************"+result);
-      returnData.mlResult=result;
-      res.json(returnData);
-    },
-    error => { 
-      console.log("****************"+error);
-      returnData.mlResult=error;
-      res.json(returnData);
-    }
-  );*/
-});
-
 
 //post call to register member on the network
 apiRouter.post('/api/approveDocument', function(req, res) {
@@ -1075,29 +1044,18 @@ apiRouter.post('/api/airegulatorData', function(req, res) {
               //else add transaction data to return object
               returnData.approvedDocs = approvedDocs;
               //add total points given by partner to return object
-              network.selectDocumentsAIApprovalPending(cardId)
-                .then((approvalPendingList) => {
+              network.selectDocumentsAIDeclined(cardId)
+                .then((declinedList) => {
                   //return error if error in response
-                  if (approvalPendingList.error != null) {
+                  if (declinedList.error != null) {
                     res.json({
-                      error: approvalPendingList.error
+                      error: declinedList.error
                     });
                   } else {
                     //else add transaction data to return object
-                    returnData.approvalPendingList = approvalPendingList;
+                    returnData.approvalPendingList = declinedList;
                     //add total points given by partner to return object
-                    network.selectAllAIRegulators(cardId)
-                    .then((allairegulators) => {
-                      if (allairegulators.error != null) {
-                        res.json({
-                          error: allairegulators.error
-                        });
-                      } else {
-                        returnData.allairegulatorsList=allairegulators;
-                          //return returnData
-                        res.json(returnData);
-                      }
-                    });
+                    res.json(returnData);
                   }
                 });
             }

@@ -111,15 +111,12 @@ $('.register-partner').click(function() {
 });
 
 $('.register-mlregulator').click(function() {
-  var cardID = $('.ai-card-id input').val();
-  var regulatorID = $('.ai-regulator-id input').val();
   var urlhost = $('.urlhost input').val();
   var urlpath = $('.urlpath input').val();
   var port = $('.port input').val();
   var method = $('.method input').val();
-  var ainame = $('.ainame input').val();
 
-  var inputData='{"regulatorid":"'+regulatorID+'","cardid":"'+cardID+'","urlhost":"'+urlhost+'","urlpath":"'+urlpath+'","port":"'+port+'","method":"'+method+'","name":"'+ainame+'"}';
+  var inputData='{"urlhost":"'+urlhost+'","urlpath":"'+urlpath+'","port":"'+port+'","method":"'+method+'"}';
 
   console.log(inputData);
 

@@ -57,7 +57,7 @@ query selectDocumentsAIApproved {
   description: "Select all the AI approved documents"
   statement:
   		SELECT org.ibm.dms.Document
-  			WHERE (docAIApprovalStatus == 'approved' OR docAIApprovalStatus == 'declined')
+  			WHERE (docAIApprovalStatus == 'approved')
 }
 
 query selectDocumentsApprovelPending {
@@ -67,11 +67,11 @@ query selectDocumentsApprovelPending {
   			WHERE (docStatus == false )
 }
 
-query selectDocumentsAIApprovalPending {
+query selectDocumentsAIDeclined {
   description: "Select all the AI approval pending documents"
   statement:
   		SELECT org.ibm.dms.Document
-  			WHERE (docAIApprovalStatus == 'pending-approval')
+  			WHERE (docAIApprovalStatus == 'declined')
 }
 
 query selectAllAIRegulators {

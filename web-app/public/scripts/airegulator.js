@@ -40,27 +40,16 @@ $('.sign-in-regulator').click(function() {
 
           return str;
         });
-        var allairegulators = data.allairegulatorsList;
         //update dashboard
         $('.dashboards').html(function() {
 
-            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="4"><tr><th>Member</th><th>Document Name </th><th>Current Status </th><th>Action</th><th>ML-Option</th><th>ML-Prediction</th></tr>';
+            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="4"><tr><th>Member</th><th>Document Name </th><th>ML-Prediction</th></tr>';
             var documentsData = data.approvedDocs;
             if(documentsData.length>0)
             {
               for (var i = 0; i < documentsData.length; i++) {
-                var select_airegulator_options = '<select id="selectregulatorids_'+documentsData[i].documentId+'" onchange="callML(\''+documentsData[i].documentId+'\',\''+formCardId+'\');"><option value="select">select</option>"';
-                if(allairegulators.length>0)
-                {
-                    for(var j=0; j<allairegulators.length;j++)
-                    {
-                        select_airegulator_options=select_airegulator_options+'<option value="'+allairegulators[j].id+'">'+allairegulators[j].name+'</option>';
-                    }
-        
-                }
-                select_airegulator_options=select_airegulator_options+'</select>';
   
-                str = str + '<tr><td width="50%">' + documentsData[i].owner + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].docAIApprovalStatus + '</td><td><img  width="25" height="25" src="./img/approveicon.png"  onclick="return documentAIAction(\''+documentsData[i].documentId+'\',\'approve\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return documentAIAction(\''+documentsData[i].documentId+'\',\'reject\');"></img></td><td><div>'+select_airegulator_options+'</div></td><td><div id="td_'+documentsData[i].documentId+'"></div></td></tr>';
+                str = str + '<tr><td width="50%">' + documentsData[i].owner + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].docAIApprovalStatus + '</td></tr>';
               }
             }
 
@@ -68,27 +57,14 @@ $('.sign-in-regulator').click(function() {
             return str;
         });
 
-        //update dashboard
         $('.reviewandapprove').html(function() {
-            var allairegulators = data.allairegulatorsList;
-
-            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="4"><tr><th>Member</th> <th>Document Name </th> <th>Action </th><th>ML-Option</th><th>ML-Prediction</th></tr>';
+            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="4"><tr><th>Member</th> <th>Document Name </th><th>ML-Prediction</th></tr>';
             var documentsData = data.approvalPendingList;
             if(documentsData)
             {
               for (var i = 0; i < documentsData.length; i++) {
                 var doc_id=documentsData[i].documentId;
-                var select_airegulator_options = '<select id="selectregulatorids_'+documentsData[i].documentId+'" onchange="callML(\''+documentsData[i].documentId+'\',\''+formCardId+'\');"><option value="select">select</option>"';
-                if(allairegulators.length>0)
-                {
-                    for(var j=0; j<allairegulators.length;j++)
-                    {
-                        select_airegulator_options=select_airegulator_options+'<option value="'+allairegulators[j].id+'">'+allairegulators[j].name+'</option>';
-                    }
-        
-                }
-                select_airegulator_options=select_airegulator_options+'</select>';
-                    str = str + '<tr><td>' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return documentAIAction(\''+documentsData[i].documentId+'\',\'approve\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return documentAIAction(\''+documentsData[i].documentId+'\',\'reject\');"></img></td><td><div>'+select_airegulator_options+'</div></td><td><div id="td_'+documentsData[i].documentId+'"></div></td></tr>';
+                    str = str + '<tr><td>' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
               }
             }
 
@@ -117,7 +93,7 @@ $('.sign-in-regulator').click(function() {
 
 });
 
-function callML(documentId,formCardId){
+/*function callML(documentId,formCardId){
     var selectedaivalidator = document.getElementById("selectregulatorids_"+documentId).value;
     if(!selectedaivalidator.includes('select')){
 
@@ -157,9 +133,9 @@ function callML(documentId,formCardId){
       location.reload();
     }
   });
-}}
+}}*/
 
-function documentAIAction(documentId,action) {
+/*function documentAIAction(documentId,action) {
 
   //get user input data
   var formregulatorId = $('.regulator-id input').val();
@@ -259,4 +235,4 @@ function documentAIAction(documentId,action) {
       location.reload();
     }
   });
-}
+}*/

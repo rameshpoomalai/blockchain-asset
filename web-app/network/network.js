@@ -564,7 +564,7 @@ module.exports = {
 
   },
 
-  selectDocumentsAIApprovalPending: async function (cardId) {
+  selectDocumentsAIDeclined: async function (cardId) {
 
     try {
       //connect to network with cardId
@@ -572,7 +572,7 @@ module.exports = {
       await businessNetworkConnection.connect(cardId);
 
 
-      const selectDocumentsApprovalPending = await businessNetworkConnection.query('selectDocumentsAIApprovalPending');
+      const selectDocumentsApprovalPending = await businessNetworkConnection.query('selectDocumentsAIDeclined');
 
 
       //disconnect
@@ -778,7 +778,7 @@ selectApprovedDocumentByMember: async function (cardId,accountNumber) {
     }
 
   },
-  addDocument: async function (cardId, accountNumber, docName, docDesc, documentId, docPath, originalname, mimetype, size)
+  addDocument: async function (cardId, accountNumber, docName, docDesc, documentId, docPath, originalname, mimetype, size,docAIApprovalStatus)
   {
     try {
 
@@ -795,7 +795,7 @@ selectApprovedDocumentByMember: async function (cardId,accountNumber) {
       document.docName = docName;
       document.documentDescription = docDesc;
       document.docStatus = false;
-      document.docAIApprovalStatus = 'pending-approval';
+      document.docAIApprovalStatus = docAIApprovalStatus;
       document.docPath = docPath;
       document.originalname = originalname;
       document.mimetype = mimetype;

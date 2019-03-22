@@ -158,28 +158,12 @@ module.exports = {
 
   },
 
-  validateAIRegulatorRegistration: async function(cardId, urlhost, urlpath,port,method,name,regulatorid) {
+  validateAIRegulatorRegistration: async function(urlhost, urlpath,port,method) {
 
     var response = {};
 
     //verify input otherwise return error with an informative message
-    if (regulatorid.length < 1) {
-      response.error = "Enter access key";
-      console.log(response.error);
-      return response;
-    } else if (!/^[0-9a-zA-Z]+$/.test(regulatorid)) {
-      response.error = "Access key can be letters and numbers only";
-      console.log(response.error);
-      return response;
-    } else if (cardId.length < 1) {
-      response.error = "Enter access key";
-      console.log(response.error);
-      return response;
-    } else if (!/^[0-9a-zA-Z]+$/.test(cardId)) {
-      response.error = "Access key can be letters and numbers only";
-      console.log(response.error);
-      return response;
-    } else if (urlhost.length < 1) {
+    if (urlhost.length < 1) {
       response.error = "Enter regulator id(example: retailai.mybluemix.net)";
       console.log(response.error);
       return response;
@@ -195,12 +179,7 @@ module.exports = {
       response.error = "method can be either GET or POST";
       console.log(response.error);
       return response;
-    } else if(name.length < 1){
-      response.error = "Enter a valid name";
-      console.log(response.error);
-      return response;
-    }
-      else {
+    } else {
       console.log("Valid Entries validateAIRegulatorRegistration");
       return response;
     }
