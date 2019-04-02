@@ -523,7 +523,7 @@ module.exports = {
       return selectDocumentsApproved;
     }
     catch(err) {
-      console.log("selectDocumentsApproved:"+err);
+      console.log("selectDocumentsAIApproved:"+err);
       var error = {};
       error.error = err.message;
       return error
@@ -593,34 +593,6 @@ module.exports = {
 
   },
 
-  selectAllAIRegulators: async function (cardId){
-    try {
-      //connect to network with cardId
-      businessNetworkConnection = new BusinessNetworkConnection();
-      await businessNetworkConnection.connect(cardId);
-
-
-      const allairegulators = await businessNetworkConnection.query('selectAllAIRegulators');
-
-
-      //disconnect
-      await businessNetworkConnection.disconnect(cardId);
-
-      console.log("total allairegulators "+allairegulators.length);
-
-      //return usePointsResults object
-      return allairegulators;
-    }
-    catch(err) {
-
-      console.log("selectAllAIRegulators:"+err);
-      var error = {};
-      error.error = err.message;
-      return error
-    }
-
-  },
-
   getAIRegulatorById: async function (cardId, regulatorId){
     try {
     console.log("checking for AIRegulator id");
@@ -637,8 +609,6 @@ module.exports = {
 
       //return partner object
       return regulator;
-
-
     }
     catch(err) {
       //print and return error
@@ -794,8 +764,9 @@ selectApprovedDocumentByMember: async function (cardId,accountNumber) {
       document.documentId = documentId
       document.docName = docName;
       document.documentDescription = docDesc;
-      document.docStatus = false;
+      document.docStatus = 'pending';
       document.docAIApprovalStatus = docAIApprovalStatus;
+      document.docFinalApproval = 'pending';
       document.docPath = docPath;
       document.originalname = originalname;
       document.mimetype = mimetype;
@@ -836,15 +807,48 @@ selectApprovedDocumentByMember: async function (cardId,accountNumber) {
       //add partner participant
       const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.Document');
       var myDocument = await assetRegistry.get(documentId);
-      if(myDocument.docAIApprovalStatus.includes('approved')){
-        myDocument.docStatus=true;
+      //if(myDocument.docAIApprovalStatus.includes('approved')){
+        myDocument.docStatus='approved';
         await assetRegistry.update(myDocument);  
-      }
-      else{
+      //}
+      /*else{
         var error = {};
       error.error = "This document has not yet been approved by AI.";
       return error;
-      }
+      }*/
+      
+          //disconnect
+      await businessNetworkConnection.disconnect('admin@dms-network');
+
+      return true;
+    }
+    catch(err) {
+      //print and return error
+      console.log(err);
+      var error = {};
+      error.error = err.message;
+      return error;
+    }
+
+
+  },
+
+  rejectDocument: async function (cardId, documentId)
+  {
+    try {
+
+      //connect as admin
+      businessNetworkConnection = new BusinessNetworkConnection();
+      await businessNetworkConnection.connect('admin@dms-network');
+
+      //get the factory for the business network.
+      factory = businessNetworkConnection.getBusinessNetwork().getFactory();
+
+      //add partner participant
+      const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.Document');
+      var myDocument = await assetRegistry.get(documentId);
+        myDocument.docStatus='declined';
+        await assetRegistry.update(myDocument);  
       
           //disconnect
       await businessNetworkConnection.disconnect('admin@dms-network');
@@ -1044,7 +1048,7 @@ addAccessRequest: async function (cardId, partnerAccNo, docId, memberAccNo,  doc
     authorizeRequest.requestId = requestId
     authorizeRequest.documentId = docId
     authorizeRequest.docName = docName;
-    authorizeRequest.approvalStatus = false;
+    authorizeRequest.approvalStatus = 'pending';
     authorizeRequest.member = factory.newRelationship(namespace, 'Member', memberAccNo);
     authorizeRequest.partner = factory.newRelationship(namespace, 'Partner', partnerAccNo);
     //add partner participant
@@ -1077,7 +1081,36 @@ approveAccessRequest: async function (cardId, memberAccNo, accessRequestId)
 
     const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.AuthorizeRequest');
     authorizeRequest = await assetRegistry.get(accessRequestId);
-    authorizeRequest.approvalStatus = true;
+    authorizeRequest.approvalStatus = 'approved';
+
+    await assetRegistry.update(authorizeRequest);
+
+
+        //disconnect
+    await businessNetworkConnection.disconnect('admin@dms-network');
+
+    return true;
+  }
+  catch(err) {
+    //print and return error
+    console.log(err);
+    var error = {};
+    error.error = err.message;
+    return error;
+  }
+},
+
+declineAcessRequest: async function (cardId, memberAccNo, accessRequestId)
+{
+  try {
+
+    //connect as admin
+    businessNetworkConnection = new BusinessNetworkConnection();
+    await businessNetworkConnection.connect('admin@dms-network');
+
+    const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.AuthorizeRequest');
+    authorizeRequest = await assetRegistry.get(accessRequestId);
+    authorizeRequest.approvalStatus = 'declined';
 
     await assetRegistry.update(authorizeRequest);
 
@@ -1095,4 +1128,5 @@ approveAccessRequest: async function (cardId, memberAccNo, accessRequestId)
     return error;
   }
 }
+
 }

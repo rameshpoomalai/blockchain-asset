@@ -48,8 +48,9 @@ asset Document identified by documentId {
   o String documentId
   o String docName
   o String documentDescription
-  o Boolean docStatus
+  o String docStatus
   o String docAIApprovalStatus
+  o String docFinalApproval
   o String docPath
   o String originalname
   o String mimetype
@@ -62,7 +63,7 @@ asset AuthorizeRequest identified by requestId {
   o String requestId
   o String documentId
   o String docName
-  o Boolean approvalStatus
+  o String approvalStatus
   --> Member member
   --> Partner partner
 }

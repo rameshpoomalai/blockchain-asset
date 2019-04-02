@@ -419,17 +419,15 @@ apiRouter.post('/api/approveDocument', function(req, res) {
 
 });
 
-//post call to register member on the network
-apiRouter.post('/api/documentAIAction', function(req, res) {
+apiRouter.post('/api/rejectDocument', function(req, res) {
 
   //declare variables to retrieve from request
   var accountNumber = req.body.regulatorid;
   var cardId = req.body.cardid;
   var docId = req.body.documentId;
-  var action = req.body.actiontype;
   var returnData = {};
   //print variables
-  console.log('documentAIAction Using param - docId: ' + docId );
+  console.log('rejectDocument Using param - docId: ' + docId );
 
   //validate member registration fields
   validate.validateDocumentId(cardId, accountNumber, docId)
@@ -441,17 +439,20 @@ apiRouter.post('/api/documentAIAction', function(req, res) {
         });
         return;
       } else {
-
-        if(action.includes('approve')){
-        //approve document starts here
         //else register member on the network
-        network.approveAIDocument(cardId, docId)
-        .then(() => {
+        network.rejectDocument(cardId, docId)
+        .then((response) => {
           //get UsePoints transactions from the network
-
-            network.selectDocumentsAIApproved(cardId)
+          if (response.error != null) {
+            res.json({
+              error: response.error
+            });
+            return;
+          }else{
+  
+            network.selectDocumentsApproved(cardId)
               .then((approvedDocs) => {
-                console.log("selectDocumentsAIApproved>>>>>>"+approvedDocs)
+                console.log("selectDocumentsApproved>>>>>>"+approvedDocs)
                 //return error if error in response
                 if (approvedDocs.error != null) {
                   res.json({
@@ -466,7 +467,7 @@ apiRouter.post('/api/documentAIAction', function(req, res) {
                   console.log('documentList using param - ' + ' accountNumber: ' + accountNumber + ' cardId: ' + cardId);
                   //network.documentList(cardId, accountNumber )
                   //Load the approval pending list
-                  network.selectDocumentsAIApprovalPending(cardId)
+                  network.selectDocumentsApprovalPending(cardId)
                     .then((approvalPendingList) => {
 
                       //return error if error in response
@@ -478,96 +479,26 @@ apiRouter.post('/api/documentAIAction', function(req, res) {
                         //else add transaction data to return object
                         returnData.approvalPendingList = approvalPendingList;
                         //add total points given by partner to return object
-                        //add total points given by partner to return object
-                          network.selectAllAIRegulators(cardId)
-                          .then((allairegulators) => {
-                            if (allairegulators.error != null) {
-                              res.json({
-                                error: allairegulators.error
-                              });
-                            } else {
-                              returnData.allairegulatorsList=allairegulators;
-                                //return returnData
-                              res.json(returnData);
-                            }
-                          });
 
                       }
+
+                      //return returnData
+                      res.json(returnData);
+
                     });
 
 
                 }
               });
-
+            }
         })
 
-      }//approve document ends here
-
-      else{
-         //reject document starts here
-        //else register member on the network
-        network.rejectAIDocument(cardId, docId)
-        .then(() => {
-          //get UsePoints transactions from the network
-
-            network.selectDocumentsAIApproved(cardId)
-              .then((approvedDocs) => {
-                console.log("selectDocumentsAIApproved>>>>>>"+approvedDocs)
-                //return error if error in response
-                if (approvedDocs.error != null) {
-                  res.json({
-                    error: approvedDocs.error
-                  });
-                } else {
-                  //else add transaction data to return object
-                  returnData.approvedDocs = approvedDocs;
-                  //add total points given by partner to return object
-
-                  //get UsePoints transactions from the network
-                  console.log('documentList using param - ' + ' accountNumber: ' + accountNumber + ' cardId: ' + cardId);
-                  //network.documentList(cardId, accountNumber )
-                  //Load the approval pending list
-                  network.selectDocumentsAIApprovalPending(cardId)
-                    .then((approvalPendingList) => {
-
-                      //return error if error in response
-                      if (approvalPendingList.error != null) {
-                        res.json({
-                          error: approvalPendingList.error
-                        });
-                      } else {
-                        //else add transaction data to return object
-                        returnData.approvalPendingList = approvalPendingList;
-                        //add total points given by partner to return object
-                        //add total points given by partner to return object
-                          network.selectAllAIRegulators(cardId)
-                          .then((allairegulators) => {
-                            if (allairegulators.error != null) {
-                              res.json({
-                                error: allairegulators.error
-                              });
-                            } else {
-                              returnData.allairegulatorsList=allairegulators;
-                                //return returnData
-                              res.json(returnData);
-                            }
-                          });
-
-                      }
-                    });
-
-
-                }
-              });
-
-        })
-      }//reject document ends here
-    }
-
+      }
     });
 
 
 });
+
 
 //post call to register member on the network
 apiRouter.post('/api/registerMember', function(req, res) {
@@ -1175,6 +1106,61 @@ apiRouter.post('/api/approveAccessRequest', function(req, res) {
 
   });
 });
+
+apiRouter.post('/api/declineAcessRequest', function(req, res) {
+
+  //declare variables to retrieve from request
+  var memberAccNo = req.body.accountNo;
+  var cardId = req.body.cardid;
+  var accessRequestId = req.body.accessRequestId;
+
+  var returnData = {};
+  //print variables
+  console.log('declineAcessRequest Using param - accessRequestId: ' + accessRequestId +" memberAccNo:"+memberAccNo+" cardId:"+cardId);
+
+
+  //validate member registration fields
+  validate.validateApproveAccessRequest(cardId, memberAccNo, accessRequestId)
+    .then((response) => {
+      //return error if error in response
+      if (response.error != null) {
+        res.json({
+          error: response.error
+        });
+        return;
+      } else {
+
+        //else register member on the network
+        network.declineAcessRequest(cardId, memberAccNo, accessRequestId)
+        .then(() => {
+          //get UsePoints transactions from the network
+            console.log("partnerAccNumber:"+memberAccNo)
+            console.log("cardId:"+cardId)
+            network.authorizeRequestListByMember(cardId, memberAccNo)
+              .then((authorizeRequestList) => {
+                console.log("authorizeRequestList:"+authorizeRequestList);
+                //return error if error in response
+                if (authorizeRequestList.error != null) {
+                  res.json({
+                    error: authorizeRequestList.error
+                  });
+                  return;
+                }
+                else {
+                  //else return success
+                  returnData.approveRequestList = authorizeRequestList;
+                  res.json(returnData);
+                }
+
+              })
+
+          });
+
+    }
+
+  });
+});
+
 //declare port
 var port = process.env.PORT || 8000;
 if (process.env.VCAP_APPLICATION) {

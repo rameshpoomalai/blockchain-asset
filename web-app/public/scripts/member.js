@@ -65,18 +65,18 @@ function updateMember() {
 
         //update partners dropdown for use points transaction
         $('.approveRequestList').html(function() {
-          var str = '<tr><th width="30%">Document Name</th><th width="30%">Requesting Partner</th><th width="30%">approve</th></tr>';
+          var str = '<tr><th width="30%">Document Name</th><th width="30%">Requesting Partner</th><th width="30%">action</th></tr>';
           var approveRequestList = data.approveRequestList;
           if(approveRequestList)
           {
             for (var i = 0; i < approveRequestList.length; i++) {
 
-              if(approveRequestList[i].approvalStatus==true)
+              if(approveRequestList[i].approvalStatus=='approved' || approveRequestList[i].approvalStatus=='declined')
               {
-                str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> Approved </td>  </tr>';
+                str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> '+approveRequestList[i].approvalStatus+' </td>  </tr>';
               }
               else {
-                str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> <a><img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveAcessRequest(\''+approveRequestList[i].requestId+'\');">Click to approve</img></a> </td>  </tr>';
+                str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> <a><img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveAcessRequest(\''+approveRequestList[i].requestId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return declineAcessRequest(\''+approveRequestList[i].requestId+'\');"></img></a> </td>  </tr>';
               }
             }
           }
@@ -195,6 +195,7 @@ function addDocument() {
     }
   });
 }
+
 function approveAcessRequest(requestId)
 {
 
@@ -231,18 +232,18 @@ function approveAcessRequest(requestId)
           //update heading
           //update partners dropdown for use points transaction
           $('.approveRequestList').html(function() {
-            var str = '<tr><th width="30%">Document Name</th><th width="30%">Requesting Partner</th><th width="30%">approve</th></tr>';
+            var str = '<tr><th width="30%">Document Name</th><th width="30%">Requesting Partner</th><th width="30%">Action</th></tr>';
             var approveRequestList = data.approveRequestList;
             if(approveRequestList)
             {
               for (var i = 0; i < approveRequestList.length; i++) {
 
-                if(approveRequestList[i].approvalStatus==true)
+                if(approveRequestList[i].approvalStatus=='approved' || approveRequestList[i].approvalStatus=='declined')
                 {
-                str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> Approved </td>  </tr>';
+                str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> '+approveRequestList[i].approvalStatus+' </td>  </tr>';
                 }
                 else {
-                  str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> <a><img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveAcessRequest(\''+approveRequestList[i].requestId+'\');">Click to approve</img></a> </td>  </tr>';
+                  str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> <a><img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveAcessRequest(\''+approveRequestList[i].requestId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return declineAcessRequest(\''+approveRequestList[i].requestId+'\');"></img></a> </td>  </tr>';
                 }
 
               }
@@ -265,6 +266,78 @@ function approveAcessRequest(requestId)
       }
     });
 }
+
+function declineAcessRequest(requestId)
+{
+
+    //get user input data
+    var formAccountNum = $('.account-number input').val();
+    var formCardId = $('.card-id input').val();
+
+    //create json data
+    var inputData = '{' + '"accountNo" : "' + formAccountNum + '", ' + '"cardid" : "' + formCardId + '", "accessRequestId" :"'+requestId+'"}';
+    console.log(inputData);
+
+    //make ajax call
+    $.ajax({
+      type: 'POST',
+      url: apiUrl + 'declineAcessRequest',
+      data: inputData,
+      dataType: 'json',
+      contentType: 'application/json',
+      beforeSend: function() {
+        //display loading
+        document.getElementById('loader').style.display = "block";
+      },
+      success: function(data) {
+
+        //remove loader
+        document.getElementById('loader').style.display = "none";
+
+        //check data for error
+        if (data.error) {
+          alert(data.error);
+          return;
+        } else {
+
+          //update heading
+          //update partners dropdown for use points transaction
+          $('.approveRequestList').html(function() {
+            var str = '<tr><th width="30%">Document Name</th><th width="30%">Requesting Partner</th><th width="30%">Action</th></tr>';
+            var approveRequestList = data.approveRequestList;
+            if(approveRequestList)
+            {
+              for (var i = 0; i < approveRequestList.length; i++) {
+
+                if(approveRequestList[i].approvalStatus=='approved' || approveRequestList[i].approvalStatus=='declined')
+                {
+                str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> '+approveRequestList[i].approvalStatus+' </td>  </tr>';
+                }
+                else {
+                  str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> <a><img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveAcessRequest(\''+approveRequestList[i].requestId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return declineAcessRequest(\''+approveRequestList[i].requestId+'\');"></img></a> </td>  </tr>';
+                }
+
+              }
+            }
+
+            return str;
+          });
+
+        }
+
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        //reload on error
+        alert("Error: Try again")
+        console.log(errorThrown);
+        console.log(textStatus);
+        console.log(jqXHR);
+        document.getElementById('loader').style.display = "none";
+        location.reload();
+      }
+    });
+}
+
 function fileUpload(form, action_url, div_id) {
     // Create the iframe...
     var iframe = document.createElement("iframe");

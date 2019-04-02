@@ -66,7 +66,7 @@ $('.sign-in-regulator').click(function() {
             {
               for (var i = 0; i < documentsData.length; i++) {
                 var doc_id=documentsData[i].documentId;
-                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveDocument(\''+documentsData[i].documentId+'\');"></img></td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
+                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveDocument(\''+documentsData[i].documentId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return rejectDocument(\''+documentsData[i].documentId+'\');"></img></td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
               }
             }
 
@@ -150,13 +150,99 @@ function approveDocument(documentId) {
 
         //update dashboard
         $('.reviewandapprove').html(function() {
-            var str = '<table width="100%"  class="blueTable documentList" border="1" cellspacing="1" cellpadding="1"><tr><th>Member</th> <th>Document Name </th> <th>Approve </th><th>AI-Approval</th></tr>';
+            var str = '<table width="100%"  class="blueTable documentList" border="1" cellspacing="1" cellpadding="1"><tr><th>Member</th> <th>Document Name </th> <th>Action </th><th>AI-Approval</th></tr>';
             var documentsData = data.approvalPendingList;
             if(documentsData)
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href="/api/viewDocument?path='+documentsData[i].docPath+'">' + documentsData[i].docName +'</a></td><td> <a href="/api/approveDocument?id='+documentsData[i].documentId+'">'+documentsData[i].documentId+'</a>  </td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
+                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href="/api/viewDocument?path='+documentsData[i].docPath+'">' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveDocument(\''+documentsData[i].documentId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return rejectDocument(\''+documentsData[i].documentId+'\');"></img>  </td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
+              }
+            }
+
+            str = str + '</table>'
+            return str;
+
+        });
+
+      }
+
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      //reload on error
+      alert("Error: Try again")
+      console.log(errorThrown);
+      console.log(textStatus);
+      console.log(jqXHR);
+      document.getElementById('loader').style.display = "none";
+      location.reload();
+    }
+  });
+
+
+}
+
+function rejectDocument(documentId) {
+
+  //get user input data
+  var formregulatorId = $('.regulator-id input').val();
+  var formCardId = $('.card-id input').val();
+
+  //create json data
+  var inputData = '{' + '"regulatorid" : "' + formregulatorId + '", ' + '"cardid" : "' + formCardId + '", "documentId" :"'+documentId+'"}';
+  console.log(inputData);
+
+
+
+  //make ajax call
+  $.ajax({
+    type: 'POST',
+    url: apiUrl + 'rejectDocument',
+    data: inputData,
+    dataType: 'json',
+    contentType: 'application/json',
+    beforeSend: function() {
+      //display loading
+      document.getElementById('loader').style.display = "block";
+    },
+    success: function(data) {
+
+      //remove loader
+      document.getElementById('loader').style.display = "none";
+
+      //check data for error
+      if (data.error) {
+        alert(data.error);
+        return;
+      } else {
+
+        //update heading
+
+        $('.dashboards').html(function() {
+
+            var str = '<table width="100%"  class="blueTable  documentList" border="1" cellspacing="1" cellpadding="1"><tr><th>Member</th><th width="50%">Document Name </th><th width="50%">Document Status </th><th>AI-approval</tr>';
+            var documentsData = data.approvedDocs;
+            if(documentsData)
+            {
+              for (var i = 0; i < documentsData.length; i++) {
+
+                str = str + '<tr><td width="50%">' + documentsData[i].owner + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].docStatus + '</td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
+              }
+            }
+
+            str = str + '</table>'
+            return str;
+        });
+
+        //update dashboard
+        $('.reviewandapprove').html(function() {
+            var str = '<table width="100%"  class="blueTable documentList" border="1" cellspacing="1" cellpadding="1"><tr><th>Member</th> <th>Document Name </th> <th>Action </th><th>AI-Approval</th></tr>';
+            var documentsData = data.approvalPendingList;
+            if(documentsData)
+            {
+              for (var i = 0; i < documentsData.length; i++) {
+
+                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href="/api/viewDocument?path='+documentsData[i].docPath+'">' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveDocument(\''+documentsData[i].documentId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return rejectDocument(\''+documentsData[i].documentId+'\');"></img>  </td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
               }
             }
 

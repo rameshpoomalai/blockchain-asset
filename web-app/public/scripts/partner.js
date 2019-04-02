@@ -50,10 +50,13 @@ $('.sign-in-partner').click(function() {
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                if(documentsData[i].approvalStatus==true)
+                if(documentsData[i].approvalStatus=='approved')
                 {
                     
-                    str = str + '<tr><td width="50%">' + documentsData[i].member + '</td><td width="50%"> <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formPartnerId+' target=”_blank” >' + documentsData[i].docName + '</a></td><td width="50%"> ' + documentsData[i].approvalStatus + '</td></tr>';
+                  str = str + '<tr><td width="50%">' + documentsData[i].member + '</td><td width="50%"> <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formPartnerId+' target=”_blank” >' + documentsData[i].docName + '</a></td><td width="50%"> ' + documentsData[i].approvalStatus + '</td></tr>';
+                }
+                else {
+                  str = str + '<tr><td width="50%">' + documentsData[i].member + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].approvalStatus + '</td></tr>';                  
                 }
 
               }
@@ -72,7 +75,7 @@ $('.sign-in-partner').click(function() {
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                if(documentsData[i].approvalStatus==false)
+                if(documentsData[i].approvalStatus=='pending')
                 {
                     str = str + '<tr><td width="50%">' + documentsData[i].member + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].approvalStatus + '</td></tr>';
                 }
@@ -277,7 +280,7 @@ function requestAccess() {
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                if(documentsData[i].approvalStatus==true)
+                if(documentsData[i].approvalStatus=='approved')
                 {
                     str = str + '<tr><td width="50%">' + documentsData[i].member + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].approvalStatus + '</td></tr>';
                 }
@@ -298,7 +301,7 @@ function requestAccess() {
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                if(documentsData[i].approvalStatus==false)
+                if(documentsData[i].approvalStatus=='pending')
                 {
                     str = str + '<tr><td width="50%">' + documentsData[i].member + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].approvalStatus + '</td></tr>';
                 }
