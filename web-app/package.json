@@ -34,9 +34,11 @@
     "uuid": "3.3.2",
     "composer-wallet-inmemory": "0.20.5",
     "composer-wallet-filesystem": "0.20.5",
-    "multiparty": "4.2.1"
+    "multiparty": "4.2.1",
+    "file-api": "0.10.4"
   },
   "dependencies": {
+    "file-api": "^0.10.4",
     "http": "0.0.0",
     "httpclient": "0.1.0"
   }

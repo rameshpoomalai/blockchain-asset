@@ -327,6 +327,42 @@ module.exports = {
 
   },
 
+  updateAIRegulator: async function (cardid, urlhost, urlpath, port, method, name,regulatorid) {
+
+    try {
+      //connect as admin
+      businessNetworkConnection = new BusinessNetworkConnection();
+      await businessNetworkConnection.connect('admin@dms-network');
+
+      //get the factory for the business network.
+      factory = businessNetworkConnection.getBusinessNetwork().getFactory();
+
+      //add partner participant
+      const requlatorRegistry = await businessNetworkConnection.getParticipantRegistry(namespace + '.AIRegulator');
+      var aireg = await requlatorRegistry.get(regulatorid);
+
+      aireg.urlhost=urlhost;
+      aireg.urlpath=urlpath;
+      aireg.port=port;
+      aireg.method=method;
+
+      await requlatorRegistry.update(aireg);
+
+      //disconnect
+      await businessNetworkConnection.disconnect('admin@dms-network');
+
+      return true;
+    }
+    catch(err) {
+      //print and return error
+      console.log(err);
+      var error = {};
+      error.error = err.message;
+      return error;
+    }
+
+  },
+
   /*
   * Get Partner data
   * @param {String} cardId Card id to connect to network
@@ -809,13 +845,11 @@ selectApprovedDocumentByMember: async function (cardId,accountNumber) {
       var myDocument = await assetRegistry.get(documentId);
       //if(myDocument.docAIApprovalStatus.includes('approved')){
         myDocument.docStatus='approved';
-        await assetRegistry.update(myDocument);  
       //}
       /*else{
-        var error = {};
-      error.error = "This document has not yet been approved by AI.";
-      return error;
+        myDocument.docStatus='declined';
       }*/
+      await assetRegistry.update(myDocument);  
       
           //disconnect
       await businessNetworkConnection.disconnect('admin@dms-network');

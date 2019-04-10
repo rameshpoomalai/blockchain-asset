@@ -66,7 +66,7 @@ $('.sign-in-regulator').click(function() {
             {
               for (var i = 0; i < documentsData.length; i++) {
                 var doc_id=documentsData[i].documentId;
-                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveDocument(\''+documentsData[i].documentId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return rejectDocument(\''+documentsData[i].documentId+'\');"></img></td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
+                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td> <button type="button" onclick="return approveDocument(\''+documentsData[i].documentId+'\');"><img  width="25" height="25" src="./img/approveicon.png"></img></button><button type="button"  onclick="return rejectDocument(\''+documentsData[i].documentId+'\');"><img  width="25" height="25" src="./img/rejecticon.png"></img></button></td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
               }
             }
 
@@ -156,7 +156,7 @@ function approveDocument(documentId) {
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href="/api/viewDocument?path='+documentsData[i].docPath+'">' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveDocument(\''+documentsData[i].documentId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return rejectDocument(\''+documentsData[i].documentId+'\');"></img>  </td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
+                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href="/api/viewDocument?path='+documentsData[i].docPath+'">' + documentsData[i].docName +'</a></td><td> <button type="button" onclick="return approveDocument(\''+documentsData[i].documentId+'\');"><img  width="25" height="25" src="./img/approveicon.png"></img></button><button type="button"  onclick="return rejectDocument(\''+documentsData[i].documentId+'\');"><img  width="25" height="25" src="./img/rejecticon.png"></img> </button> </td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
               }
             }
 
@@ -242,7 +242,7 @@ function rejectDocument(documentId) {
             {
               for (var i = 0; i < documentsData.length; i++) {
 
-                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href="/api/viewDocument?path='+documentsData[i].docPath+'">' + documentsData[i].docName +'</a></td><td> <img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveDocument(\''+documentsData[i].documentId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return rejectDocument(\''+documentsData[i].documentId+'\');"></img>  </td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
+                str = str + '<tr><td >' + documentsData[i].owner + '</td><td > <a href="/api/viewDocument?path='+documentsData[i].docPath+'">' + documentsData[i].docName +'</a></td><td> <button type="button" onclick="return approveDocument(\''+documentsData[i].documentId+'\');"><img  width="25" height="25" src="./img/approveicon.png"></img></button><button type="button" onclick="return rejectDocument(\''+documentsData[i].documentId+'\');"><img  width="25" height="25" src="./img/rejecticon.png"></img> </button> </td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
               }
             }
 

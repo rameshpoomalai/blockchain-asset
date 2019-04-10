@@ -192,7 +192,7 @@ module.exports = {
   * @param {String} partnerId
   * @param {String} name
   */
-  validateDocumentDetails: async function(cardId, accountNumber, docName, docDesc) {
+  validateDocumentDetails: async function(cardId, accountNumber, docName, docDesc,mimetype) {
 
     var response = {};
 
@@ -211,6 +211,27 @@ module.exports = {
     }
 
   },
+
+  validateimageDocumentDetails: async function(mimetype,docName) {
+
+    var response = {};
+
+    //verify input otherwise return error with an informative message
+    if(mimetype.includes("image/jpeg") || mimetype.includes("image/png") || mimetype.includes("image/jpg"))
+    { }
+    else{
+      response.error = "only image file can be uploaded.";
+    }
+    if(docName.trim().length==0){
+      response.error = "name is needed";
+    }
+    else{
+      console.log("Valid Entries");
+    }
+      return response;
+
+  },
+
   validateDocumentId: async function(cardId, accountNumber, docId) {
 
     var response = {};

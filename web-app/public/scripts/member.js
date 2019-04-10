@@ -5,6 +5,7 @@ $('.sign-in-member').click(function() {
   updateMember();
 });
 
+var f_name='',l_name='';
 
 function updateMember() {
 
@@ -40,6 +41,8 @@ function updateMember() {
 
         //update heading
         $('.heading').html(function() {
+          f_name = data.firstName;
+          l_name = data.lastName;
           var str = '<h2><b>' + data.firstName + ' ' + data.lastName + '</b></h2>';
           str = str + '<h2><b>' + data.accountNumber + '</b></h2>';
 
@@ -65,7 +68,7 @@ function updateMember() {
 
         //update partners dropdown for use points transaction
         $('.approveRequestList').html(function() {
-          var str = '<tr><th width="30%">Document Name</th><th width="30%">Requesting Partner</th><th width="30%">action</th></tr>';
+          var str = '<tr><th width="30%">Document Name</th><th width="30%">Requesting Partner</th><th width="30%">approval</th></tr>';
           var approveRequestList = data.approveRequestList;
           if(approveRequestList)
           {
@@ -76,7 +79,7 @@ function updateMember() {
                 str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> '+approveRequestList[i].approvalStatus+' </td>  </tr>';
               }
               else {
-                str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> <a><img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveAcessRequest(\''+approveRequestList[i].requestId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return declineAcessRequest(\''+approveRequestList[i].requestId+'\');"></img></a> </td>  </tr>';
+                str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> <a><button type="button" onclick="return approveAcessRequest(\''+approveRequestList[i].requestId+'\');"><img  width="25" height="25" src="./img/approveicon.png"></img></button><button type="button" onclick="return declineAcessRequest(\''+approveRequestList[i].requestId+'\');"><img  width="25" height="25" src="./img/rejecticon.png"></img></button></a> </td>  </tr>';
               }
             }
           }
@@ -128,7 +131,7 @@ function addDocument() {
 
   //create json data
   var inputData = '{' + '"accountnumber" : "' + formAccountNum + '", ' + '"cardid" : "'
-  + formCardId  + '", "docName" : "' + documentName + '", "docDesc" : "' + documentDescription
+  + formCardId  + '","f_name":"'+f_name+'","l_name":"'+l_name+'","docName" : "' + documentName + '", "docDesc" : "' + documentDescription
   + '", '+documentdetails+'}';
   console.log(inputData)
 
@@ -243,17 +246,13 @@ function approveAcessRequest(requestId)
                 str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> '+approveRequestList[i].approvalStatus+' </td>  </tr>';
                 }
                 else {
-                  str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> <a><img  width="25" height="25" src="./img/approveicon.png"  onclick="return approveAcessRequest(\''+approveRequestList[i].requestId+'\');"></img><img  width="25" height="25" src="./img/rejecticon.png"  onclick="return declineAcessRequest(\''+approveRequestList[i].requestId+'\');"></img></a> </td>  </tr>';
+                  str = str + '<tr><td width="30%">' + approveRequestList[i].docName + '</td><td width="30%"> ' + approveRequestList[i].partner + '</td> <td width="30%"> <a><button type="button"  onclick="return approveAcessRequest(\''+approveRequestList[i].requestId+'\');"><img  width="25" height="25" src="./img/approveicon.png" ></img></button><button type="button"  onclick="return declineAcessRequest(\''+approveRequestList[i].requestId+'\');"><img  width="25" height="25" src="./img/rejecticon.png"></img></button></a> </td>  </tr>';
                 }
-
               }
             }
-
             return str;
           });
-
         }
-
       },
       error: function(jqXHR, textStatus, errorThrown) {
         //reload on error

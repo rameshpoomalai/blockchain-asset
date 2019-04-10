@@ -99,7 +99,9 @@ apiRouter.get('/member', function(req, res) {
   res.sendFile(path.join(__dirname + '/public/member.html'));
 });
 
-
+apiRouter.get('/train', function(req, res) {
+  res.sendFile(path.join(__dirname + '/public/addToGallery.html'));
+});
 
 apiRouter.get('/api/viewfile', function (req, res) {
   console.log("req.query.documentId:"+req.query.documentId);
@@ -180,14 +182,16 @@ function addDocument(req, res)
   var originalname = req.body.originalname;
   var mimetype = req.body.mimetype;
   var path =  req.body.path;
-  var size = req.body.size
+  var size = req.body.size;
+  var f_name=req.body.f_name;
+  var l_name=req.body.l_name;
 
   var returnData = {};
   //print variables
   console.log('Using param - docName: ' + docName + ' docDesc: ' + docDesc + ' accountNumber: ' + accountNumber + ' cardId: ' + cardId);
 
   //validate member registration fields
-  validate.validateDocumentDetails(cardId, accountNumber, docName, docDesc)
+  validate.validateDocumentDetails(cardId, accountNumber, docName, docDesc, mimetype)
     .then((response) => {
       //return error if error in response
       if (response.error != null) {
@@ -207,12 +211,12 @@ function addDocument(req, res)
                 var options = {
                   host: response.urlhost,
                   port: response.port,
-                  path: response.urlpath+'?transID='+docId,
+                  path: response.urlpath,
                   method: response.method
                 };
       
                 let promise = new Promise(function(resolve, reject) {
-                  http.request(options, function(resp) {
+                  var post_req = http.request(options, function(resp) {
                     //console.log('STATUS: ' + res.statusCode);
                     //console.log('HEADERS: ' + JSON.stringify(res.headers));
                     resp.setEncoding('utf8');
@@ -224,21 +228,19 @@ function addDocument(req, res)
                       //console.log('BODY: ' + chunk);
                       reject(chunk);
                     });
-                  }).end();
+                  });
+                  var fs = require('fs');
+                  var temp = fs.readFileSync(path);
+                  var imageAsBase64 = new Buffer(temp).toString('base64');
+                  var req_json='{"image":"'+imageAsBase64+'","threshold":"0.8"}';
+                  post_req.write(req_json);
+                  post_req.end();
               });
             
               promise.then(
                 result => { 
                   console.log("****************"+result);
-                  var docAIApprovalStatus = "";
-                  if(result.toLowerCase().includes('success'))
-                    {
-                      docAIApprovalStatus='approved';
-                    }
-                  else
-                    {
-                      docAIApprovalStatus='declined';
-                    }
+                  var docAIApprovalStatus = checkAIStatus(result,f_name,l_name);
                   network.addDocument(cardId, accountNumber, docName, docDesc, docId, path, originalname, mimetype, size,docAIApprovalStatus)
                   .then((response) => {
                     //return error if error in response
@@ -284,9 +286,147 @@ function addDocument(req, res)
     });
 }
 
+function checkAIStatus(result,f_name,l_name){
+  var json_obj=JSON.parse(result);
+  var final_status = 'declined';
+  json_obj.Results.forEach(obj => {
+    if(obj.id != -1){
+      var ID = JSON.stringify(obj.id);
+      if(ID.toLowerCase().includes(f_name.toLowerCase()) || ID.toLowerCase().includes(l_name.toLowerCase())){
+        final_status = 'approved';
+      }
+    }
+  });
+  console.log("AIApprovalstatus : "+final_status);
+  return final_status;
+}
+
 //post call to register member on the network
 apiRouter.post('/api/addDocument', function(req, res) {
   addDocument(req, res);
+});
+
+function addDocumentToGallery(req, res)
+{
+  //declare variables to retrieve from request
+  var docName = req.body.docName;
+  var originalname = req.body.originalname;
+  var mimetype = req.body.mimetype;
+  var path =  req.body.path;
+  var size = req.body.size
+
+  var returnData = {};
+  //print variables
+  console.log('Using param - docName: ' + docName + ' originalname: ' + originalname + ' mimetype: ' + mimetype + ' path: ' + path + ' size: ' + size);
+
+  //validate member registration fields
+  validate.validateimageDocumentDetails(mimetype,docName)
+    .then((response) => {
+      //return error if error in response
+      if (response.error != null) {
+        res.json({
+          error: response.error
+        });
+        return;
+      } else {
+        var fs = require('fs');
+        var temp = fs.readFileSync(path);
+        var imageAsBase64 = new Buffer(temp).toString('base64');
+        var options = {
+          host: '169.38.98.41',
+          port: '8003',
+          path: '/api/score',
+          method: 'POST'
+        };  
+
+        let promise = new Promise(function(resolve, reject) {
+          var post_req = http.request(options, function(resp) {
+            //console.log('STATUS: ' + res.statusCode);
+            //console.log('HEADERS: ' + JSON.stringify(res.headers));
+            resp.setEncoding('utf8');
+            resp.on('data', function (chunk) {
+              //console.log('BODY: ' + chunk);
+              resolve(chunk);
+            });
+            resp.on('error', function(chunk){
+              //console.log('BODY: ' + chunk);
+              reject(chunk);
+            });
+          });
+
+          post_req.write(imageAsBase64);
+          post_req.end();
+      });
+    
+      promise.then(
+        result => {
+          console.log("****************"+result);
+          var resp = JSON.parse(result);
+          if(resp.score != -1.0 && resp.score>=0.3){
+            var options = {
+              host: '169.38.98.41',
+              port: '8002',
+              path: '/api/enroll',
+              method: 'POST'
+            }; 
+
+            let promise = new Promise(function(resolve, reject) {
+              var post_req = http.request(options, function(resp) {
+                //console.log('STATUS: ' + res.statusCode);
+                //console.log('HEADERS: ' + JSON.stringify(res.headers));
+                resp.setEncoding('utf8');
+                resp.on('data', function (chunk) {
+                  //console.log('BODY: ' + chunk);
+                  resolve(chunk);
+                });
+                resp.on('error', function(chunk){
+                  //console.log('BODY: ' + chunk);
+                  reject(chunk);
+                });
+              });
+              var params='{"subjectID":"'+docName+'","subjectName":"'+docName+'","image":"'+imageAsBase64+'"}';
+              post_req.write(params);
+              post_req.end();
+          });
+
+          promise.then(
+            result => {
+              console.log("****************"+result);
+              res.json({
+                result:result
+              });
+            },
+            error => {
+              console.log("error****************"+error);
+              res.json({
+                error: error
+              });
+              return;
+            }
+          );
+          }
+
+          else{
+            var score_err = JSON.parse(result);
+            res.json({
+              result:score_err.notes+' score '+score_err.score+', try adding another image'
+            });
+          }
+        },
+        error => { 
+          console.log("error****************"+error);
+          res.json({
+            error: error
+          });
+          return;
+        }
+      );
+      }
+    });
+}
+
+apiRouter.post('/api/addDocumentToGallery', function(req, res) {
+  addDocumentToGallery(req, res);
 });
 
 apiRouter.post('/api/registerAIRegulator', function(req, res) {
@@ -320,9 +460,18 @@ apiRouter.post('/api/registerAIRegulator', function(req, res) {
                   });
                 }
                 else{
-                  console.log('update implementation pending');
-                  res.json({
-                    error: 'update implementation of AIValidator is pending'
+                  network.updateAIRegulator(aicardid, urlhost, urlpath, port, method,name, airegid)
+                  .then((response) => {
+                    if (response.error != null) {
+                      res.json({
+                        error: response.error
+                      });
+                    }
+                    else{
+                      res.json({
+                        success: response
+                      });
+                    }
                   });
                 }
               });
