@@ -189,3 +189,51 @@ rule NetworkAdminSystem {
     resource: "org.hyperledger.composer.system.**"
     action: ALLOW
 }
+
+rule AllAccess {
+  description: "AllAccess - grant everything to everybody"
+  participant: "org.hyperledger.composer.system.Participant"
+  operation: ALL
+  resource: "org.hyperledger.composer.system.**"
+  action: ALLOW
+}
+
+rule AddDocumentMemberTransactionRule {
+  description: "rule for add document to txn from Member"
+  participant: "org.ibm.dms.Member"
+  operation: ALL
+  resource(res): "org.ibm.dms.Document"
+  transaction(tx): "org.ibm.dms.AddDocumentTransaction"
+  condition: (tx.documentId === res.documentId)
+  action: ALLOW
+}
+
+rule AddDocumentAdminTransactionRule {
+  description: "rule for add document to assetrepo from Admin"
+  participant: "org.hyperledger.composer.system.NetworkAdmin"
+  operation: ALL
+  resource(res): "org.ibm.dms.Document"
+  transaction(tx): "org.ibm.dms.AddDocumentTransaction"
+  condition: (tx.documentId === res.documentId)
+  action: ALLOW
+}
+
+rule ALLAddDocumentTransaction {
+  description: "Description of the Transactional ACL rule"
+  participant: "ANY"
+  operation: ALL
+  resource(res): "org.ibm.dms.Document"
+  transaction(tx): "org.ibm.dms.AddDocumentTransaction"
+  condition: (tx.documentId === res.documentId)
+  action: ALLOW
+}
+
+rule ALLChangeDocumentStatusByRegulatorTransaction {
+  description: "Description of the Transactional ACL rule"
+  participant: "ANY"
+  operation: ALL
+  resource(res): "org.ibm.dms.Document"
+  transaction(tx): "org.ibm.dms.ChangeDocumentStatusByRegulatorTransaction"
+  condition: (tx.documentId === res.documentId)
+  action: ALLOW
+}

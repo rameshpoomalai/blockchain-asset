@@ -122,3 +122,141 @@ async function revokeAccess(revoke) {  // eslint-disable-line no-unused-vars
         await memberRegistry.update(me);
     }
 }
+
+
+/**
+* A transaction processor function to change docAIApprovalStatus.
+* @param {org.ibm.dms.ChangeDocumentStatusByAITransaction} tx
+* @transaction
+*/
+
+async function changeDocumentStatusByAITransaction(tx){
+
+    try{
+    const assetRegistry = await getAssetRegistry('org.ibm.dms' + '.Document');
+    var myDocument = await assetRegistry.get(tx.documentId);
+    let oldValue = myDocument.docAIApprovalStatus;
+    myDocument.docAIApprovalStatus=tx.docAIApprovalStatus;
+    await assetRegistry.update(myDocument);
+    let event = getFactory().newEvent('org.ibm.dms', 'ChangeDocumentStatusByAIEvent');
+    event.changeDocumentStatusByAITransaction = tx;
+    emit(event);
+    return "success";
+    }catch(err) {
+        //print and return error
+        console.log(err);
+        throw new Error(err.message);
+      }
+}
+
+/**
+* A transaction processor function to add a new document to asset registry.
+* @param {org.ibm.dms.AddDocumentTransaction} tx
+* @transaction
+*/
+async function addDocumentTransaction(tx){
+    try{
+        console.log('addDocumentTransaction IN ');
+        console.log(
+            'tx.documentId:'+tx.documentId+
+            'tx.docName:'+tx.docName+
+            'tx.documentDescription:'+tx.documentDescription+
+            'tx.docStatus:'+tx.docStatus+
+            'tx.docAIApprovalStatus:'+tx.docAIApprovalStatus+
+            'tx.docFinalApproval:'+tx.docFinalApproval+
+            'tx.docPath:'+tx.docPath+
+            'tx.originalname:'+tx.originalname+
+            'tx.mimetype:'+tx.mimetype+
+            'tx.size:'+tx.size+
+            'tx.accountNumber:'+tx.owneraccnum
+        );
+        const assetRegistry = await getAssetRegistry('org.ibm.dms' + '.Document');
+        const document = getFactory().newResource('org.ibm.dms', 'Document', tx.documentId);
+        document.documentId = tx.documentId;
+        document.docName = tx.docName;
+        document.documentDescription = tx.documentDescription;
+        document.docStatus = tx.docStatus;
+        document.docAIApprovalStatus = tx.docAIApprovalStatus;
+        document.docFinalApproval = tx.docFinalApproval;
+        document.docPath = tx.docPath;
+        document.originalname = tx.originalname;
+        document.mimetype = tx.mimetype;
+        document.size = tx.size;
+        document.owner = getFactory().newRelationship('org.ibm.dms', 'Member', tx.owneraccnum);
+        await assetRegistry.add(document);
+
+        let event = getFactory().newEvent('org.ibm.dms', 'AddDocumentEvent');
+        event.addDocumentTransaction = tx;
+        emit(event);
+
+        console.log('addDocumentTransaction returning success');
+        return "success";
+  
+    }catch(err) {
+        //print and return error
+        console.log('addDocumentTransaction err : '+err);
+        throw new Error(err.message);
+      }
+}
+
+/**
+* A transaction processor function to add a new document to asset registry.
+* @param {org.ibm.dms.ChangeDocumentStatusByRegulatorTransaction} tx
+* @transaction
+*/
+
+async function changeDocumentStatusByRegulatorTransaction(tx){
+    try{
+        console.log('changeDocumentStatusByRegulatorTransaction IN ');
+        const assetRegistry = await getAssetRegistry('org.ibm.dms' + '.Document');
+        const document = await assetRegistry.get(tx.documentId);
+        document.docStatus=tx.docStatus;
+        document.docFinalApproval=tx.docStatus;
+        await assetRegistry.update(document);
+
+        let event = getFactory().newEvent('org.ibm.dms', 'ChangeDocumentStatusByRegulatorEvent');
+        event.changeDocumentStatusByRegulatorTransaction = tx;
+        emit(event);
+
+        console.log('changeDocumentStatusByRegulatorTransaction returning success');
+
+        return "success";
+  
+    }catch(err) {
+        //print and return error
+        console.log('changeDocumentStatusByRegulatorTransaction err : '+err);
+        throw new Error(err.message);
+      }
+}
+
+/**
+* A transaction processor function to add a new document to asset registry.
+* @param {org.ibm.dms.GetDocumentTxnsByIdTransaction} tx
+* @transaction
+*/
+
+async function getDocumentTxnsByIdTransaction(tx){
+        //fetch ledger txns
+        const nativeKey = getNativeAPI().createCompositeKey('Asset:org.ibm.dms.Document', [tx.documentId]);
+        const iterator = await getNativeAPI().getHistoryForKey(nativeKey);
+        let results = [];
+        let res = {done : false};
+        while (!res.done) {
+            res = await iterator.next();
+    
+            if (res && res.value && res.value.value) {
+                let val = res.value.value.toString('utf8');
+                if (val.length > 0) {
+                    results.push(JSON.parse(val));
+                }
+            }
+            if (res && res.done) {
+                try {
+                    iterator.close();
+                }
+                catch (err) {
+                }
+            }
+        }
+return JSON.stringify(results);
+}

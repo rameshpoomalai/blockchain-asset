@@ -132,6 +132,21 @@ apiRouter.get('/api/viewfile', function (req, res) {
     });
 });
 
+apiRouter.get('/api/viewDocumentHistory', function (req, res) {
+  console.log("req.query.documentId:"+req.query.documentId);
+  res.setHeader('Content-type', 'application/json');
+  network.getDocumentTxnsById(req.query.documentId)
+    .then((document) => {
+      if (document.error != null) {
+        res.json({
+          error: document.error
+        });
+      } else {
+        res.write(document);
+        res.end();
+      }
+    });
+});
 
 
 //get member registration page

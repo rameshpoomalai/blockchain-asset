@@ -49,7 +49,7 @@ $('.sign-in-regulator').click(function() {
             {
               for (var i = 0; i < documentsData.length; i++) {
   
-                str = str + '<tr><td width="50%">' + documentsData[i].owner + '</td><td width="50%">' + documentsData[i].docName + '</td><td width="50%"> ' + documentsData[i].docAIApprovalStatus + '</td></tr>';
+                str = str + '<tr><td width="50%">' + documentsData[i].owner + '</td><td width="50%"><a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName + '</a></td><td width="50%"> <a href=/api/viewDocumentHistory?documentId='+documentsData[i].documentId +' target=”_blank” >' + documentsData[i].docAIApprovalStatus + '</a></td></tr>';
               }
             }
 
@@ -64,7 +64,7 @@ $('.sign-in-regulator').click(function() {
             {
               for (var i = 0; i < documentsData.length; i++) {
                 var doc_id=documentsData[i].documentId;
-                    str = str + '<tr><td>' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td>'+documentsData[i].docAIApprovalStatus+'</td></tr>';
+                    str = str + '<tr><td>' + documentsData[i].owner + '</td><td > <a href=/api/viewfile?documentId='+documentsData[i].documentId +'&cardId='+formCardId +'&partnerId='+formregulatorId+' target=”_blank” >' + documentsData[i].docName +'</a></td><td> <a href=/api/viewDocumentHistory?documentId='+documentsData[i].documentId +' target=”_blank” >'+documentsData[i].docAIApprovalStatus+'</a></td></tr>';
               }
             }
 

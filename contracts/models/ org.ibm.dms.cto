@@ -55,7 +55,6 @@ asset Document identified by documentId {
   o String originalname
   o String mimetype
   o Integer size
-  o String[] authorizedPartners optional
   --> Member owner
 }
 
@@ -89,4 +88,52 @@ transaction ApproveDocument  extends MemberTransaction {
 
 event MemberEvent {
   o MemberTransaction memberTransaction
+}
+
+@returns(String)
+transaction ChangeDocumentStatusByAITransaction{
+  o String documentId
+  o String docAIApprovalStatus
+}
+
+event ChangeDocumentStatusByAIEvent{
+  o ChangeDocumentStatusByAITransaction changeDocumentStatusByAITransaction
+}
+
+@returns(String)
+transaction AddDocumentTransaction{
+  o String documentId
+  o String docName
+  o String documentDescription
+  o String docStatus
+  o String docAIApprovalStatus
+  o String docFinalApproval
+  o String docPath
+  o String originalname
+  o String mimetype
+  o Integer size
+  o String owneraccnum
+}
+
+event AddDocumentEvent{
+  o AddDocumentTransaction addDocumentTransaction
+}
+
+@returns(String)
+transaction ChangeDocumentStatusByRegulatorTransaction {
+  o String documentId
+  o String docStatus
+}
+
+event ChangeDocumentStatusByRegulatorEvent {
+  o ChangeDocumentStatusByRegulatorTransaction changeDocumentStatusByRegulatorTransaction
+}
+
+@returns(String)
+transaction GetDocumentTxnsByIdTransaction {
+  o String documentId
+}
+
+event GetDocumentTxnsByIdEvent{
+  o GetDocumentTxnsByIdTransaction getDocumentTxnsByIdTransaction
 }

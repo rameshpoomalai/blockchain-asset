@@ -66,6 +66,40 @@ async function useIdentity(cardName) {
   await businessNetworkConnection.connect(cardName);
 }
 
+async function changeDocumentAIApprovalStatus(cardId, documentId,docAIApprovalStatus)
+{
+  try {
+
+    let businessNetworkConnection = new BusinessNetworkConnection();
+    await businessNetworkConnection.connect('admin@dms-network');
+
+    //get the factory for the business network.
+    let factory = businessNetworkConnection.getBusinessNetwork().getFactory();
+    const transaction = factory.newTransaction('org.ibm.dms', 'ChangeDocumentStatusByAITransaction');
+    transaction.documentId=documentId;
+    transaction.docAIApprovalStatus=docAIApprovalStatus;
+    const resp = await businessNetworkConnection.submitTransaction(transaction);
+
+    await businessNetworkConnection.disconnect('admin@dms-network');
+
+    if(resp == 'success')
+      return true;
+    else{
+      console.log('ChangeDocumentStatusByAITransaction txn was not successful');
+      var error = {};
+      error.error = 'ChangeDocumentStatusByAITransaction txn was not successful';
+      return error;
+    }
+  }
+  catch(err) {
+    //print and return error
+    console.log(err);
+    var error = {};
+    error.error = err.message;
+    return error;
+  }
+}
+
 
 //export module
 module.exports = {
@@ -791,33 +825,53 @@ selectApprovedDocumentByMember: async function (cardId,accountNumber) {
       //connect as admin
       businessNetworkConnection = new BusinessNetworkConnection();
       await businessNetworkConnection.connect('admin@dms-network');
-
-      //get the factory for the business network.
       factory = businessNetworkConnection.getBusinessNetwork().getFactory();
-      console.log("documentId:"+documentId);
-      //create partner participant
-      const document = factory.newResource(namespace, 'Document', documentId);
-      document.documentId = documentId
-      document.docName = docName;
-      document.documentDescription = docDesc;
-      document.docStatus = 'pending';
-      document.docAIApprovalStatus = docAIApprovalStatus;
-      document.docFinalApproval = 'pending';
-      document.docPath = docPath;
-      document.originalname = originalname;
-      document.mimetype = mimetype;
-      document.size = size;
-      document.owner = factory.newRelationship(namespace, 'Member', accountNumber);
 
       //add partner participant
-      const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.Document');
-      await assetRegistry.add(document);
-
-
-          //disconnect
+      const transaction = factory.newTransaction('org.ibm.dms', 'AddDocumentTransaction');
+      transaction.documentId = documentId
+      transaction.docName = docName;
+      transaction.documentDescription = docDesc;
+      transaction.docStatus = 'pending';
+      transaction.docAIApprovalStatus = 'pending';
+      transaction.docFinalApproval = 'pending';
+      transaction.docPath = docPath;
+      transaction.originalname = originalname;
+      transaction.mimetype = mimetype;
+      transaction.size = size;
+      transaction.owneraccnum = accountNumber;
+      const resp = await businessNetworkConnection.submitTransaction(transaction);
+      
+      //disconnect
       await businessNetworkConnection.disconnect('admin@dms-network');
 
-      return true;
+      if(resp == 'success')
+      {
+        try{
+        const resp = await changeDocumentAIApprovalStatus(cardId,documentId,docAIApprovalStatus);
+        if(resp.error){
+          console.log('document addition txn failed');
+          var error = {};
+          error.error = resp.error;
+          return error;
+        }
+        else{
+          return true;
+        }
+        }catch(err) {
+          //print and return error
+          console.log(err);
+          var error = {};
+          error.error = err.message;
+          return error;
+        }
+      }
+      else{
+        console.log('document addition txn failed');
+        var error = {};
+        error.error = 'document addition txn failed';
+        return error;
+      }
     }
     catch(err) {
       //print and return error
@@ -826,68 +880,112 @@ selectApprovedDocumentByMember: async function (cardId,accountNumber) {
       error.error = err.message;
       return error;
     }
-
 
   },
+
   approveDocument: async function (cardId, documentId)
   {
-    try {
+  try{
+    //connect as admin
+    businessNetworkConnection = new BusinessNetworkConnection();
+    await businessNetworkConnection.connect('admin@dms-network');
 
-      //connect as admin
-      businessNetworkConnection = new BusinessNetworkConnection();
-      await businessNetworkConnection.connect('admin@dms-network');
+    //get the factory for the business network.
+    factory = businessNetworkConnection.getBusinessNetwork().getFactory();
 
-      //get the factory for the business network.
-      factory = businessNetworkConnection.getBusinessNetwork().getFactory();
+    const changedocstatustxn = factory.newTransaction(namespace,'ChangeDocumentStatusByRegulatorTransaction');
+    changedocstatustxn.documentId = documentId;
+    changedocstatustxn.docStatus = 'approved';
 
-      //add partner participant
-      const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.Document');
-      var myDocument = await assetRegistry.get(documentId);
-      //if(myDocument.docAIApprovalStatus.includes('approved')){
-        myDocument.docStatus='approved';
-      //}
-      /*else{
-        myDocument.docStatus='declined';
-      }*/
-      await assetRegistry.update(myDocument);  
+    const resp = await businessNetworkConnection.submitTransaction(changedocstatustxn);
       
-          //disconnect
-      await businessNetworkConnection.disconnect('admin@dms-network');
+    //disconnect
+    await businessNetworkConnection.disconnect('admin@dms-network');
 
+    if(resp == 'success')
       return true;
-    }
-    catch(err) {
-      //print and return error
-      console.log(err);
+    else{
+      console.log('approveDocument txn failed');
       var error = {};
-      error.error = err.message;
+      error.error = 'approveDocument txn failed'
       return error;
     }
+  }
+  catch(err) {
+    //print and return error
+    console.log(err);
+    var error = {};
+    error.error = err.message;
+    return error;
+  }
+  },
 
+  getDocumentTxnsById: async function (documentId)
+  {
+  try{
+    //connect as admin
+    businessNetworkConnection = new BusinessNetworkConnection();
+    await businessNetworkConnection.connect('admin@dms-network');
 
+    //get the factory for the business network.
+    factory = businessNetworkConnection.getBusinessNetwork().getFactory();
+
+    const docTxns = factory.newTransaction(namespace,'GetDocumentTxnsByIdTransaction');
+    docTxns.documentId = documentId;
+    
+    const resp = await businessNetworkConnection.submitTransaction(docTxns);
+      
+    //disconnect
+    await businessNetworkConnection.disconnect('admin@dms-network');
+
+    console.log('getDocumentTxnsById txns received '+ JSON.parse(resp));
+    if(resp.length > 0)
+    {
+      return resp;
+    }
+    else{
+      console.log('getDocumentTxnsById txn returns 0 result');
+      var error = {};
+      error.error = 'getDocumentTxnsById txn returns 0 result';
+      return error;
+    }
+  }
+  catch(err) {
+    //print and return error
+    console.log(err);
+    var error = {};
+    error.error = err.message;
+    return error;
+  }
   },
 
   rejectDocument: async function (cardId, documentId)
   {
-    try {
-
+    try{
       //connect as admin
       businessNetworkConnection = new BusinessNetworkConnection();
       await businessNetworkConnection.connect('admin@dms-network');
-
+  
       //get the factory for the business network.
       factory = businessNetworkConnection.getBusinessNetwork().getFactory();
-
-      //add partner participant
-      const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.Document');
-      var myDocument = await assetRegistry.get(documentId);
-        myDocument.docStatus='declined';
-        await assetRegistry.update(myDocument);  
-      
-          //disconnect
+  
+      const changedocstatustxn = factory.newTransaction(namespace,'ChangeDocumentStatusByRegulatorTransaction');
+      changedocstatustxn.documentId = documentId;
+      changedocstatustxn.docStatus = 'declined';
+  
+      const resp = await businessNetworkConnection.submitTransaction(changedocstatustxn);
+        
+      //disconnect
       await businessNetworkConnection.disconnect('admin@dms-network');
-
-      return true;
+  
+      if(resp == 'success')
+        return true;
+      else{
+        console.log('rejectDocument txn failed');
+        var error = {};
+        error.error = 'rejectDocument txn failed'
+        return error;
+      }
     }
     catch(err) {
       //print and return error
@@ -896,70 +994,8 @@ selectApprovedDocumentByMember: async function (cardId,accountNumber) {
       error.error = err.message;
       return error;
     }
+  
 
-
-  },
-
-  approveAIDocument: async function (cardId, documentId)
-  {
-    try {
-
-      //connect as admin
-      businessNetworkConnection = new BusinessNetworkConnection();
-      await businessNetworkConnection.connect('admin@dms-network');
-
-      //get the factory for the business network.
-      factory = businessNetworkConnection.getBusinessNetwork().getFactory();
-
-      //add partner participant
-      const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.Document');
-      var myDocument = await assetRegistry.get(documentId);
-      myDocument.docAIApprovalStatus='approved';
-      await assetRegistry.update(myDocument);
-
-          //disconnect
-      await businessNetworkConnection.disconnect('admin@dms-network');
-
-      return true;
-    }
-    catch(err) {
-      //print and return error
-      console.log(err);
-      var error = {};
-      error.error = err.message;
-      return error;
-    }
-  },
-
-  rejectAIDocument: async function (cardId, documentId)
-  {
-    try {
-
-      //connect as admin
-      businessNetworkConnection = new BusinessNetworkConnection();
-      await businessNetworkConnection.connect('admin@dms-network');
-
-      //get the factory for the business network.
-      factory = businessNetworkConnection.getBusinessNetwork().getFactory();
-
-      //add partner participant
-      const assetRegistry = await businessNetworkConnection.getAssetRegistry(namespace + '.Document');
-      var myDocument = await assetRegistry.get(documentId);
-      myDocument.docAIApprovalStatus='declined';
-      await assetRegistry.update(myDocument);
-
-          //disconnect
-      await businessNetworkConnection.disconnect('admin@dms-network');
-
-      return true;
-    }
-    catch(err) {
-      //print and return error
-      console.log(err);
-      var error = {};
-      error.error = err.message;
-      return error;
-    }
   },
 
   /*
