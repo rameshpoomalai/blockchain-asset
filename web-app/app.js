@@ -449,7 +449,7 @@ apiRouter.post('/api/registerAIRegulator', function(req, res) {
   var urlpath=req.body.urlpath;
   var port=req.body.port;
   var method=req.body.method;
-  var name="sample1";
+  var name="AIRegulator";
   
   console.log('Using param - urlhost: ' + urlhost + ' urlpath: ' + urlpath + ' port: ' + port+' method:'+method+' name:'+name+' cardid:'+aicardid+' regulatorid:'+airegid);
 
