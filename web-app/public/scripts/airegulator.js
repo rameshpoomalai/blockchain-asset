@@ -90,5 +90,4 @@ $('.sign-in-regulator').click(function() {
       location.reload();
     }
   });
-
 });
