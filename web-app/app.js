@@ -1335,6 +1335,6 @@ app.use('/', apiRouter);
 app.use('/uploads', uploadRouter);
 
 //run app on port
-app.listen(port, function() {
+app.listen(port,'169.38.98.42', function() {
   console.log('app running on port: %d', port);
 });

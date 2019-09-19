@@ -1,0 +1,15 @@
+#sudo docker kill $(docker ps -q) && sudo docker rm $(docker ps -aq) && sudo docker rmi $(docker images dev-* -q) &&
+docker container ls|grep -i dev-peer0.org1.example|awk '{print "sudo docker container stop " $1}'|sudo bash
+docker container ls|grep -i hyperledger/fabric|awk '{print "sudo docker container stop " $1}'|sudo bash
+docker container ls|grep -i dev-peer0.org1.example|awk '{print "sudo docker container rm " $1}'|sudo bash
+docker container ls|grep -i hyperledger/fabric|awk '{print "sudo docker container rm " $1}'|sudo bash
+
+rm -rf ~/.composer
+cd ~/fabric-dev-servers/  && export FABRIC_VERSION=hlfv12
+./startFabric.sh
+./createPeerAdminCard.sh
+cd ~/scrap/blockchain-asset/contracts/ && rm -rf dms-network\@0.1.1.bna && npm install && composer archive create -t dir -n .
+composer network install --card PeerAdmin@hlfv1 --archiveFile dms-network@0.1.1.bna
+composer network start --networkName dms-network --networkVersion 0.1.1 --networkAdmin admin --networkAdminEnrollSecret adminpw --card PeerAdmin@hlfv1 --file networkadmin.card
+composer card import --file networkadmin.card && composer network ping --card admin@dms-network
+cd ../web-app && npm start
