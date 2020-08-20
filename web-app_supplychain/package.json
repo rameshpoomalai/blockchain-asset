@@ -19,7 +19,7 @@
     "composer-playground": "latest",
     "express": "^4.16.2",
     "request": "^2.83.0",
-    "bcrypt": "^1.0.3",
+    "bcrypt": "^5.0.0",
     "compression": "^1.7.1",
     "cookie-parser": "^1.4.3",
     "gzip": "^0.1.0",
