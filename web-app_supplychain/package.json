@@ -27,7 +27,7 @@
     "joi": "13.1.2",
     "json-sql": "0.3.11",
     "jsonwebtoken": "^8.1.1",
-    "mongoose": "^5.0.2",
+    "mongoose": "^5.7.5",
     "ipfs-api": "*",
     "multer": "1.1.0",
     "formidable": "1.2.1",
